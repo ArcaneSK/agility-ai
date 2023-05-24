@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "agility-ai"
+version = "0.1.0"
+description = "LLM conversational command client"
+authors = ["Arcane <you@example.com>"]
+readme = "README.md"
+packages = [{include = "cli"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["all"], version = "^0.95.1"}
+uvicorn = "^0.22.0"
+openai = "^0.27.5"
+pony = "^0.7.16"
+python-dotenv = "^1.0.0"
+whisper = "^1.1.10"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+cli = "python cli.py"
