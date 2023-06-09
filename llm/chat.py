@@ -5,7 +5,7 @@ from .memory import format_memory, MemoryScheme
 
 from config import Config
 
-from database import session, commit
+from database import session
 from database.models import *
 
 class Chat():
@@ -14,12 +14,12 @@ class Chat():
         """ 
         Initialize the Chat class
         """
-        cfg = Config()
+        self.cfg = Config()
 
-        if not cfg.open_api_key:
+        if not self.cfg.open_api_key:
             raise ValueError("OpenAI API Key enviroment variable (OPENAI_API_KEY) is not set.")
         
-        openai.api_key = cfg.open_api_key
+        openai.api_key = self.cfg.open_api_key
 
         self.conversation_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
 
@@ -56,7 +56,7 @@ class Chat():
             "content": content
         })
 
-    def complete(self, model="gpt-4", max_tokens=500, temperature=1.2):
+    def complete(self, model="gpt-4", max_tokens=500, temperature=1.2) -> str:
         """
         Send messages to GPT and wait for response.
         """
@@ -69,6 +69,23 @@ class Chat():
             max_tokens=max_tokens,
             temperature=temperature,
             messages = formatted_messages+self.shadow_messages
+        )
+
+        self.shadow_messages = [] # clear shadow messages
+
+        return resp['choices'][0]['message']['content']
+    
+    def summarize(self) -> str:
+        """
+        Ask GPT to summarize the chat into a single paragraph
+        """
+        self.add_shadow_message("user", self.cfg.summarize_prompt)
+
+        resp = openai.ChatCompletion.create(
+            model=self.cfg.dumb_cli_model,
+            max_tokens=500,
+            temperature=1.2,
+            messages = self.messages+self.shadow_messages
         )
 
         self.shadow_messages = [] # clear shadow messages

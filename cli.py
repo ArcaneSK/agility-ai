@@ -1,15 +1,59 @@
 import os
 import json
+from datetime import datetime
+
+from rich.console import Console
+from rich.text import Text
+from rich.markdown import Markdown
 
 from config import Config
 from llm.chat import Chat
-from utils import slugify, clean_input
-from utils.spinner import Spinner
+from utils import slugify
 
 from database import session
 from database.models import *
 
 cfg = Config()
+console = Console()
+
+
+def clean_input(prompt: str='', style=None):
+    """
+    Request input and handle interrupts
+    """
+    try:
+        prompt_text = Text(text=prompt, style=style)
+        return console.input(prompt_text)
+    except KeyboardInterrupt:
+        console.print("\nKeyboard interrupt issued", style="orange3")
+        print("Quitting...")
+        exit(0)
+
+def print_response(response) -> None:
+    """
+    Format response from LLM
+    """
+    response_out = Markdown(response)
+    console.print("Response: ", style="steel_blue1")
+    console.print(response_out)
+
+def handle_user_commands(chat, user_prompt) -> bool:
+    """
+    Intercept and process user commands
+    """
+    match user_prompt:
+        case 'quit' | '':
+            print("Quitting...")
+            quit(0)
+        case 'save':
+            save_conversation_to_file(chat)
+            return True
+        case 'load':
+            return True
+        case 'summarize':
+            resp = chat.summarize()
+            print_response(resp)
+            return True
 
 def load_system_prompt() -> str:
     """
@@ -62,7 +106,7 @@ def save_conversation_to_file(chat: object) -> None:
     chat.add_shadow_message("user", cfg.filename_prompt)
 
     try:
-        with Spinner("Saving... "):
+        with console.status("Saving... "):
             resp = chat.complete(max_tokens=10)
 
             # Sanitize filename response from GPT
@@ -92,33 +136,30 @@ def main() -> None:
     try_again = False
 
     chat = Chat()
-    chat.add_message("system", load_system_prompt())
+    #chat.add_message("system", load_system_prompt())
+
+    dt_str = datetime.now().strftime(f"%Y-%m-%d %H:%M:%S %Z")
+
+    chat.add_message("system", f"Current Date: {dt_str}")
+    chat.add_message("system", cfg.default_system_prompt)
 
     while end == False:
         if try_again == False:
-            user_prompt = clean_input("Prompt: ")
+            user_prompt = clean_input("Prompt: ", style="green3")
 
-            match user_prompt:
-                case 'quit' | '':
-                    print("Quitting...")
-                    quit(0)
-                case 'save':
-                    save_conversation_to_file(chat)
-                    continue
-                case 'load':
-                    continue
+            if handle_user_commands(chat, user_prompt):
+                continue
 
             chat.add_message("user", user_prompt)
-
+        
         try:
-            with Spinner("Thinking... "):
-                resp = chat.complete(model=cfg.dumb_cli_model)
+            with console.status("Thinking... "):
+                resp = chat.complete(model=cfg.smart_cli_model)
 
             chat.add_message("assistant", resp)
-
-            print("Response: " + resp)
-
+            print_response(resp)
             try_again = False
+
         except Exception as e:
             print("The following error occured: ", e)
             desc = clean_input("Whould you like to try again? [Y/n]: ")
@@ -130,4 +171,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()    
+    main()

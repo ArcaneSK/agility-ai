@@ -15,11 +15,3 @@ def slugify(value, allow_unicode=False):
         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value)
     return re.sub(r'[-\s]+', '-', value)
-
-def clean_input(prompt: str=''):
-    try:
-        return input(prompt)
-    except KeyboardInterrupt:
-        print("Keyboard interrupt issued")
-        print("Quitting...")
-        exit(0)
