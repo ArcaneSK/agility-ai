@@ -9,7 +9,6 @@ from rich.markdown import Markdown
 from config import Config
 from llm.chat import Chat
 from utils import slugify
-from utils.spinner import Spinner
 
 from database import session
 from database.models import *
@@ -107,7 +106,7 @@ def save_conversation_to_file(chat: object) -> None:
     chat.add_shadow_message("user", cfg.filename_prompt)
 
     try:
-        with Spinner("Saving... "):
+        with console.status("Saving... "):
             resp = chat.complete(max_tokens=10)
 
             # Sanitize filename response from GPT
@@ -154,7 +153,7 @@ def main() -> None:
             chat.add_message("user", user_prompt)
         
         try:
-            with Spinner("Thinking... "):
+            with console.status("Thinking... "):
                 resp = chat.complete(model=cfg.smart_cli_model)
 
             chat.add_message("assistant", resp)
