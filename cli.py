@@ -2,11 +2,12 @@ import os
 import json
 
 from rich.console import Console
+from rich.text import Text
 from rich.markdown import Markdown
 
 from config import Config
 from llm.chat import Chat
-from utils import slugify, clean_input
+from utils import slugify
 from utils.spinner import Spinner
 
 from database import session
@@ -15,6 +16,18 @@ from database.models import *
 cfg = Config()
 console = Console()
 
+
+def clean_input(prompt: str='', style=None):
+    """
+    Request input and handle interrupts
+    """
+    try:
+        prompt_text = Text(text=prompt, style=style)
+        return console.input(prompt_text)
+    except KeyboardInterrupt:
+        console.print("\nKeyboard interrupt issued", style="orange3")
+        print("Quitting...")
+        exit(0)
 
 def print_response(response) -> None:
     """
