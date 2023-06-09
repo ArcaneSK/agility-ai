@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 
 from rich.console import Console
 from rich.text import Text
@@ -137,6 +138,10 @@ def main() -> None:
 
     chat = Chat()
     #chat.add_message("system", load_system_prompt())
+
+    dt_str = datetime.now().strftime(f"%Y-%m-%d %H:%M:%S %Z")
+
+    chat.add_message("system", f"Current Date: {dt_str}")
     chat.add_message("system", cfg.default_system_prompt)
 
     while end == False:
