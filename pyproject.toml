@@ -14,6 +14,10 @@ openai = "^0.27.5"
 pony = "^0.7.16"
 python-dotenv = "^1.0.0"
 whisper = "^1.1.10"
+speechrecognition = "^3.10.0"
+pyaudio = "^0.2.13"
+soundfile = "^0.12.1"
+rich = "^13.4.1"
 
 [build-system]
 requires = ["poetry-core"]

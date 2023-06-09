@@ -1,4 +1,4 @@
-from pony.orm import Database, db_session, commit
+from pony.orm import Database, db_session
 
 from config import Config
 
@@ -12,6 +12,3 @@ session = db_session()
 from database.models import *
 
 db.generate_mapping(create_tables=True)
-
-def commit() -> None:
-    commit()
