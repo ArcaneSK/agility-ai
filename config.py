@@ -13,7 +13,7 @@ class Config():
         Initialize the Config class
         """
         self.database_engine = os.getenv("DATABASE_ENGINE", "sqlite")
-        self.database_name = os.getenv("DATABASE_NAME")
+        self.database_name = os.getenv("DATABASE_NAME", "database")
 
         self.open_api_key = os.getenv("OPENAI_API_KEY")
         self.smart_cli_model = "gpt-4"
