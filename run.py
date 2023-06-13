@@ -2,17 +2,23 @@ import argparse
 from interfaces import voice, api, cli
 
 def main():
-    parser = argparse.ArgumentParser(description="Choose an interface for the application.")
+    """
+    Main function for application execution
+    """
+    parser = argparse.ArgumentParser(description="LLM conversational command client.")
     parser.add_argument('-i', '--interface', choices=['voice', 'api', 'cli'], default='cli', help="Select an interface voice, api, or cli.")
+    parser.add_argument("-l", "--loadprompt", action="store_true", help="Load stored system prompt when using the CLI interface")
 
     args = parser.parse_args()
 
     if args.interface == 'voice':
-        voice.run()
+        # voice.run()
+        print("Voice functionality not yet implemented.")
     elif args.interface == 'api':
-        api.run()
+        # api.run()
+        print("API functionality not yet implemented.")
     else:
-        cli.run()
+        cli.run(load_prompt=args.loadprompt)
 
 if __name__ == "__main__":
     main()
