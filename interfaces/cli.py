@@ -17,6 +17,9 @@ cfg = Config()
 console = Console()
 
 
+def parse_arguments():
+    pass
+
 def clean_input(prompt: str='', style=None):
     """
     Request input and handle interrupts
@@ -169,6 +172,9 @@ def main() -> None:
             else:
                 try_again = True
 
+
+def run():
+    main()
 
 if __name__ == "__main__":
     main()
