@@ -1,7 +1,10 @@
+import json
+
 from fastapi import APIRouter
 
 from database import session
 from database.models import *
+from llm import chat
 
 from .schemas import *
 
@@ -9,12 +12,10 @@ from .schemas import *
 router = APIRouter()
 
 @router.get('/prompt', response_model=list[PromptSchema])
-async def get_all_prompts():
+async def get_all_system_prompts():
     with session:
-        prompts = Prompt.select(role="system")
-        print(prompts)
-        
-    return PromptSchema.from_orm(prompts)
+        prompts = Prompt.select(role="system") 
+        return [PromptSchema.from_orm(pmpt) for pmpt in prompts]
 
 @router.get('/conversation/{cid}')
 async def read_conversation(cid: int):
