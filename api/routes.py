@@ -1,14 +1,14 @@
+from fastapi import APIRouter
+
 from database import session
 from database.models import *
-from api.schemas import *
 
-from api import app
+from .schemas import *
 
-@app.get('/')
-async def root():
-    return {"status": "success"}
 
-@app.get('/prompt', response_model=list[PromptSchema])
+router = APIRouter()
+
+@router.get('/prompt', response_model=list[PromptSchema])
 async def get_all_prompts():
     with session:
         prompts = Prompt.select(role="system")
@@ -16,17 +16,17 @@ async def get_all_prompts():
         
     return PromptSchema.from_orm(prompts)
 
-@app.get('/conversation/{cid}')
+@router.get('/conversation/{cid}')
 async def read_conversation(cid: int):
     with session:
         conversation = Conversation[cid]
         return ConversationSchema.from_orm(conversation)
 
-@app.post('/conversation')
+@router.post('/conversation')
 async def create_conversation(conversation: ConversationSchema):
     return conversation
 
-@app.put('/conversation/{cid}')
+@router.put('/conversation/{cid}')
 async def update_conversation(cid: int, message: MessageSchema):
     with session:
         c = Conversation[cid]

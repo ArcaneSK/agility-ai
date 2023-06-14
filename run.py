@@ -1,5 +1,5 @@
 import argparse
-from interfaces import voice, api, cli
+from interfaces import cli, api, voice
 
 def main():
     """
@@ -15,8 +15,7 @@ def main():
         # voice.run()
         print("Voice functionality not yet implemented.")
     elif args.interface == 'api':
-        # api.run()
-        print("API functionality not yet implemented.")
+        api.run()
     else:
         cli.run(load_prompt=args.loadprompt)
 
