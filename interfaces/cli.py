@@ -17,6 +17,9 @@ cfg = Config()
 console = Console()
 
 
+def parse_arguments():
+    pass
+
 def clean_input(prompt: str='', style=None):
     """
     Request input and handle interrupts
@@ -128,20 +131,22 @@ def load_conversation_from_file() -> dict:
     # TODO: Load conversations from file
     pass
 
-def main() -> None:
+def run(load_prompt=False) -> None:
     """
     Main function for CLI execution
     """
     end = False
     try_again = False
-
     chat = Chat()
-    #chat.add_message("system", load_system_prompt())
 
     dt_str = datetime.now().strftime(f"%Y-%m-%d %H:%M:%S %Z")
-
     chat.add_message("system", f"Current Date: {dt_str}")
-    chat.add_message("system", cfg.default_system_prompt)
+
+    if (load_prompt):
+        chat.add_message("system", load_system_prompt())
+    else:
+        print("Loading default system prompt...")
+        chat.add_message("system", cfg.default_system_prompt)
 
     while end == False:
         if try_again == False:
@@ -168,7 +173,3 @@ def main() -> None:
                 quit()
             else:
                 try_again = True
-
-
-if __name__ == "__main__":
-    main()
