@@ -1,32 +1,33 @@
+import json
+
+from fastapi import APIRouter
+
 from database import session
 from database.models import *
-from api.schemas import *
+from llm import chat
 
-from api import app
+from .schemas import *
 
-@app.get('/')
-async def root():
-    return {"status": "success"}
 
-@app.get('/prompt', response_model=list[PromptSchema])
-async def get_all_prompts():
+router = APIRouter()
+
+@router.get('/prompt', response_model=list[PromptSchema])
+async def get_all_system_prompts():
     with session:
-        prompts = Prompt.select(role="system")
-        print(prompts)
-        
-    return PromptSchema.from_orm(prompts)
+        prompts = Prompt.select(role="system") 
+        return [PromptSchema.from_orm(pmpt) for pmpt in prompts]
 
-@app.get('/conversation/{cid}')
+@router.get('/conversation/{cid}')
 async def read_conversation(cid: int):
     with session:
         conversation = Conversation[cid]
         return ConversationSchema.from_orm(conversation)
 
-@app.post('/conversation')
+@router.post('/conversation')
 async def create_conversation(conversation: ConversationSchema):
     return conversation
 
-@app.put('/conversation/{cid}')
+@router.put('/conversation/{cid}')
 async def update_conversation(cid: int, message: MessageSchema):
     with session:
         c = Conversation[cid]

@@ -3,7 +3,6 @@ from datetime import datetime
 
 class MessageSchema(BaseModel):
     id: int
-    origin: str
     role: str
     text: str
     created: datetime = Field(default_factory=datetime.now, read_only=True)
