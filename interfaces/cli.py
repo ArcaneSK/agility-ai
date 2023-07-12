@@ -15,10 +15,8 @@ from database.models import *
 
 cfg = Config()
 console = Console()
+chat = Chat()
 
-
-def parse_arguments():
-    pass
 
 def clean_input(prompt: str='', style=None):
     """
@@ -124,29 +122,49 @@ def save_conversation_to_file(chat: object) -> None:
     except Exception as e:
         print("Unable to save conversation. Error: ", e)
 
+def load_conversation(conversation_id) -> dict:
+    """
+    Load conversation from the database for continuation
+    """
+    print(f"Conversation loaded: {conversation_id}")
+
 def load_conversation_from_file() -> dict:
     """
-    Load message from a file in the saved conversations directory
+    Load conversation from a file in the saved conversations directory
     """
     # TODO: Load conversations from file
     pass
 
-def run(load_prompt=False) -> None:
+def run(conversation_id=None, load_prompt=False) -> None:
     """
     Main function for CLI execution
     """
     end = False
     try_again = False
-    chat = Chat()
+
+    if conversation_id:
+        try:
+            chat.load(conversation_id)
+        except Exception as e:
+            print(f"Conversation {conversation_id} could not be loaded. Quitting...")
+            quit()
+    else:
+        try:
+            chat.create()
+        except Exception as e:
+            print(f"Conversation could not be created. Quitting...")
+            quit()
+
+        print(f"Conversation created: {chat.conversation_name} ({chat.conversation_id})")
+
+        if load_prompt:
+            chat.add_message("system", load_system_prompt())
+        else:
+            print("Loading default system prompt...")
+            chat.add_message("system", cfg.default_system_prompt)
 
     dt_str = datetime.now().strftime(f"%Y-%m-%d %H:%M:%S %Z")
     chat.add_message("system", f"Current Date: {dt_str}")
-
-    if (load_prompt):
-        chat.add_message("system", load_system_prompt())
-    else:
-        print("Loading default system prompt...")
-        chat.add_message("system", cfg.default_system_prompt)
 
     while end == False:
         if try_again == False:

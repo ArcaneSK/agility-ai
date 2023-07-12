@@ -14,7 +14,7 @@ class ConversationSchema(BaseModel):
     id: int
     name: str
     messages: list[MessageSchema]
-    created: datetime = Field(default_factory=datetime.now, read_only=True)
+    created: datetime = Field(default_factory=datetime.now, read_only=True, )
 
     @validator('messages', pre=True, allow_reuse=True)
     def pony_set_to_list(cls, values):

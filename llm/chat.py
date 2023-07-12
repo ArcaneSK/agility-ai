@@ -21,6 +21,10 @@ class Chat():
         
         openai.api_key = self.cfg.open_api_key
 
+        self.messages = []
+        self.shadow_messages = []
+
+    def create(self) -> None:
         self.conversation_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
 
         with session:
@@ -28,9 +32,6 @@ class Chat():
 
         if c:
             self.conversation_id = c.id
-
-        self.messages = []
-        self.shadow_messages = []
 
     def add_message(self, role: str, content: str) -> None:
         """
