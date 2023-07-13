@@ -1,5 +1,5 @@
 from datetime import datetime
-from pony.orm import Set, Required, Optional, LongStr 
+from pony.orm import Set, Required, Optional 
 
 from database import db
 

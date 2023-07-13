@@ -1,6 +1,8 @@
 import string
 import random
 import openai
+from pony.orm import select
+
 from .memory import format_memory, MemoryScheme
 
 from config import Config
@@ -32,6 +34,21 @@ class Chat():
 
         if c:
             self.conversation_id = c.id
+
+    def load(self, conversation_id) -> bool:
+        with session:
+            c = Conversation[conversation_id]
+
+            if c:
+                self.conversation_id = c.id
+                self.conversation_name = c.name
+                
+                message_set = select(m for m in c.messages).order_by(Message.created)
+                self.messages = [dict(role=obj.role, content=obj.text) for obj in message_set]
+
+                return True
+
+        return False
 
     def add_message(self, role: str, content: str) -> None:
         """

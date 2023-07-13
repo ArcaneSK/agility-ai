@@ -15,8 +15,7 @@ def main():
     args = parser.parse_args()
 
     if args.interface == 'voice':
-        # voice.run()
-        print("Voice functionality not yet implemented.")
+        voice.run()
     elif args.interface == 'api':
         api.run()
     else:

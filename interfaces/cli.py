@@ -2,16 +2,17 @@ import os
 import json
 from datetime import datetime
 
-from rich.console import Console
-from rich.text import Text
-from rich.markdown import Markdown
-
 from config import Config
 from llm.chat import Chat
 from utils import slugify
 
 from database import session
 from database.models import *
+
+from rich.console import Console
+from rich.text import Text
+from rich.markdown import Markdown
+
 
 cfg = Config()
 console = Console()
@@ -122,12 +123,6 @@ def save_conversation_to_file(chat: object) -> None:
     except Exception as e:
         print("Unable to save conversation. Error: ", e)
 
-def load_conversation(conversation_id) -> dict:
-    """
-    Load conversation from the database for continuation
-    """
-    print(f"Conversation loaded: {conversation_id}")
-
 def load_conversation_from_file() -> dict:
     """
     Load conversation from a file in the saved conversations directory
@@ -145,6 +140,7 @@ def run(conversation_id=None, load_prompt=False) -> None:
     if conversation_id:
         try:
             chat.load(conversation_id)
+            print(f"Conversation loaded: {chat.conversation_name} ({chat.conversation_id})")
         except Exception as e:
             print(f"Conversation {conversation_id} could not be loaded. Quitting...")
             quit()
@@ -179,9 +175,10 @@ def run(conversation_id=None, load_prompt=False) -> None:
             with console.status("Thinking... "):
                 resp = chat.complete(model=cfg.smart_cli_model)
 
-            chat.add_message("assistant", resp)
-            print_response(resp)
-            try_again = False
+                if resp:
+                    chat.add_message("assistant", resp)
+                    print_response(resp)
+                    try_again = False
 
         except Exception as e:
             print("The following error occured: ", e)
