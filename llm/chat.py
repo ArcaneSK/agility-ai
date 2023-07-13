@@ -33,6 +33,21 @@ class Chat():
         if c:
             self.conversation_id = c.id
 
+    def load(self, conversation_id) -> bool:
+        with session:
+            c = Conversation[conversation_id]
+
+            if c:
+                self.conversation_id = c.id
+                self.conversation_name = c.name
+                self.messages = list(c.messages[0])
+
+                print(self.messages)
+
+                return True
+
+        return False
+
     def add_message(self, role: str, content: str) -> None:
         """
         Add a message to the message history

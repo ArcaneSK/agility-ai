@@ -122,12 +122,6 @@ def save_conversation_to_file(chat: object) -> None:
     except Exception as e:
         print("Unable to save conversation. Error: ", e)
 
-def load_conversation(conversation_id) -> dict:
-    """
-    Load conversation from the database for continuation
-    """
-    print(f"Conversation loaded: {conversation_id}")
-
 def load_conversation_from_file() -> dict:
     """
     Load conversation from a file in the saved conversations directory
