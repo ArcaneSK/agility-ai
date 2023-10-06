@@ -74,13 +74,13 @@ class Chat():
             "content": content
         })
 
-    def complete(self, model="gpt-4", max_tokens=500, temperature=1.2) -> str:
+    def complete(self, model="gpt-4", max_tokens=500, temperature=1.2, memory_type=MemoryScheme.FULL) -> str:
         """
         Send messages to GPT and wait for response.
         """
         
         # Format messages to send to completion based on memory scheme
-        formatted_messages = format_memory(self.messages, MemoryScheme.FULL)
+        formatted_messages = format_memory(self.messages, memory_type)
 
         resp = openai.ChatCompletion.create(
             model=model,

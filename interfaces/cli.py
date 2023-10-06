@@ -69,16 +69,17 @@ def load_system_prompt() -> str:
                 print("Please, select a stored system prompt or enter nothing to specific your own:")
 
                 for prompt in Prompt.select(role="system"):
-                    print(f"    {prompt.id}. {prompt.name}")
+                    print(f" {prompt.id}. {prompt.name}")
 
                 prompt_selection = clean_input("Select: ")
 
                 if prompt_selection.isnumeric():
                     selected_prompt = Prompt[prompt_selection]
+
                     if not selected_prompt:
                         continue
                     else:
-                        return selected_prompt.text
+                        return selected_prompt.text, selected_prompt.skip_user_prompt
                 else:
                     break
     
@@ -93,7 +94,7 @@ def load_system_prompt() -> str:
         with session:
             Prompt(name=new_prompt_name, text=sys_prompt, role="system")
 
-    return sys_prompt
+    return sys_prompt, False
 
 def save_conversation_to_file(chat: object) -> None:
     """
@@ -136,6 +137,7 @@ def run(conversation_id=None, load_prompt=False) -> None:
     """
     end = False
     try_again = False
+    skip_user_input = False
 
     if conversation_id:
         try:
@@ -154,7 +156,8 @@ def run(conversation_id=None, load_prompt=False) -> None:
         print(f"Conversation created: {chat.conversation_name} ({chat.conversation_id})")
 
         if load_prompt:
-            chat.add_message("system", load_system_prompt())
+            sys_prompt, skip_user_input = load_system_prompt()
+            chat.add_message("system", sys_prompt)
         else:
             print("Loading default system prompt...")
             chat.add_message("system", cfg.default_system_prompt)
@@ -163,7 +166,7 @@ def run(conversation_id=None, load_prompt=False) -> None:
     chat.add_message("system", f"Current Date: {dt_str}")
 
     while end == False:
-        if try_again == False:
+        if try_again == False and skip_user_input == False:
             user_prompt = clean_input("Prompt: ", style="green3")
 
             if handle_user_commands(chat, user_prompt):
@@ -171,6 +174,8 @@ def run(conversation_id=None, load_prompt=False) -> None:
 
             chat.add_message("user", user_prompt)
         
+        skip_user_input = False
+
         try:
             with console.status("Thinking... "):
                 resp = chat.complete(model=cfg.smart_cli_model)

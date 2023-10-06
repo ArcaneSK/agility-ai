@@ -7,6 +7,7 @@ class Prompt(db.Entity):
     role = Required(str, default="system")
     name = Optional(str)
     text = Required(str)
+    skip_user_prompt = Optional(bool, default=0)
 
 class Conversation(db.Entity):
     name = Required(str)
