@@ -124,13 +124,6 @@ def save_conversation_to_file(chat: object) -> None:
     except Exception as e:
         print("Unable to save conversation. Error: ", e)
 
-def load_conversation_from_file() -> dict:
-    """
-    Load conversation from a file in the saved conversations directory
-    """
-    # TODO: Load conversations from file
-    pass
-
 def run(conversation_id=None, load_prompt=False) -> None:
     """
     Main function for CLI execution

@@ -74,7 +74,7 @@ class Chat():
             "content": content
         })
 
-    def complete(self, model="gpt-4", max_tokens=500, temperature=1.2, memory_type=MemoryScheme.FULL) -> str:
+    def complete(self, model="gpt-4", max_tokens=800, temperature=1.2, memory_type=MemoryScheme.FULL) -> str:
         """
         Send messages to GPT and wait for response.
         """

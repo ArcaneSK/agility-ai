@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field, validator
+from typing import Optional
 from datetime import datetime
 
 class MessageSchema(BaseModel):
-    id: int
+    id: Optional[int]
     role: str
     text: str
     created: datetime = Field(default_factory=datetime.now, read_only=True)
@@ -31,3 +32,7 @@ class PromptSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+class Completion(BaseModel):
+    cid: Optional[int] = None
+    message: MessageSchema
