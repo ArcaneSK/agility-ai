@@ -15,6 +15,8 @@ class Config():
         self.database_engine = os.getenv("DATABASE_ENGINE", "sqlite")
         self.database_name = os.getenv("DATABASE_NAME", "database")
 
+        self.module_type = os.getenv("SERVICE", "openai")
+
         self.open_api_key = os.getenv("OPENAI_API_KEY")
         self.smart_cli_model = os.getenv("OPENAI_CHAT_SMART_MODEL", "gpt-4")
         self.dumb_cli_model = os.getenv("OPENAI_CHAT_DUMB_MODEL", "gpt-3.5-turbo")

@@ -1,17 +1,16 @@
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Request, HTTPException
 
 from database import session
 from database.models import *
 from config import Config
-from llm.chat import Chat
 
 from .schemas import *
 
 cfg = Config()
 router = APIRouter()
-
+    
 @router.get('/prompt', response_model=list[PromptSchema])
 async def get_all_system_prompts():
     with session:
@@ -31,10 +30,10 @@ async def update_conversation(cid: int, message: MessageSchema):
         m = Message(conversation=c, origin=message.origin, role=message.role, text=message.text)
         return MessageSchema.from_orm(m)
     
-@router.post('/complete', response_model=MessageSchema)
-async def complete(completion: Completion):
-    chat = Chat()
-    
+@router.post('/complete', response_model=Completion)
+async def complete(request: Request, completion: Completion):
+    chat = request.app.chat
+
     if completion.cid:
         chat.load(completion.cid)
     else:
@@ -42,12 +41,19 @@ async def complete(completion: Completion):
         chat.add_message("system", "You are a helpfule AI chat bot, named Carl.")
 
     chat.add_message("user", completion.message.text)
-    resp = chat.complete(model=cfg.smart_cli_model)
+    resp = chat.complete()
     chat.add_message("assistant", resp)
 
-    resp_obj = {
+    resp_message = {
         'role': 'assistant',
         'text': resp
     }
 
-    return MessageSchema(**resp_obj)
+    resp_completion = {
+        'cid': chat.conversation_id,
+        'message': resp_message
+    }
+
+    chat.clear()
+
+    return Completion(**resp_completion)

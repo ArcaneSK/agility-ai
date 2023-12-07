@@ -1,6 +1,5 @@
 import string
 import random
-import openai
 from pony.orm import select
 
 from .memory import format_memory, MemoryScheme
@@ -10,6 +9,9 @@ from config import Config
 from database import session
 from database.models import *
 
+from llm.modules.openai_module import OpenAIModule
+from llm.modules.huggingface_module import HuggingFaceModule
+
 class Chat():
 
     def __init__(self) -> None:
@@ -18,13 +20,18 @@ class Chat():
         """
         self.cfg = Config()
 
-        if not self.cfg.open_api_key:
-            raise ValueError("OpenAI API Key enviroment variable (OPENAI_API_KEY) is not set.")
-        
-        openai.api_key = self.cfg.open_api_key
+        self.conversation_id = None
 
         self.messages = []
         self.shadow_messages = []
+
+        if self.cfg.module_type == 'huggingface':
+            self.module = HuggingFaceModule(self.cfg)
+        else:
+            self.module = OpenAIModule(self.cfg)
+
+        print("Loading Model")
+        self.module.load_model()
 
     def create(self) -> None:
         self.conversation_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
@@ -49,6 +56,11 @@ class Chat():
                 return True
 
         return False
+    
+    def clear(self):
+        self.conversation_id = None
+        self.messages = []
+        self.shadow_messages = []
 
     def add_message(self, role: str, content: str) -> None:
         """
@@ -74,38 +86,29 @@ class Chat():
             "content": content
         })
 
-    def complete(self, model="gpt-4", max_tokens=800, temperature=1.2, memory_type=MemoryScheme.FULL) -> str:
+    def complete(self, memory_type=MemoryScheme.FULL) -> str:
         """
-        Send messages to GPT and wait for response.
+        Send messages to chat module and wait for response.
         """
         
         # Format messages to send to completion based on memory scheme
         formatted_messages = format_memory(self.messages, memory_type)
-
-        resp = openai.ChatCompletion.create(
-            model=model,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            messages = formatted_messages+self.shadow_messages
-        )
-
+        resp = self.module.get_response(formatted_messages+self.shadow_messages)
         self.shadow_messages = [] # clear shadow messages
 
-        return resp['choices'][0]['message']['content']
+        return resp
     
     def summarize(self) -> str:
         """
-        Ask GPT to summarize the chat into a single paragraph
+        Ask chat module to summarize the chat into a single paragraph
         """
         self.add_shadow_message("user", self.cfg.summarize_prompt)
 
-        resp = openai.ChatCompletion.create(
-            model=self.cfg.dumb_cli_model,
-            max_tokens=500,
-            temperature=1.2,
-            messages = self.messages+self.shadow_messages
-        )
+        if isinstance(self.module, OpenAIModule):
+            resp = self.module.get_response(self.messages+self.shadow_messages, mode=OpenAIModule.MODE_DUMB)
+        else:
+            resp = self.module.get_response(self.messages+self.shadow_messages)
 
         self.shadow_messages = [] # clear shadow messages
 
-        return resp['choices'][0]['message']['content']
+        return resp

@@ -14,12 +14,7 @@ from rich.text import Text
 from rich.markdown import Markdown
 
 
-cfg = Config()
-console = Console()
-chat = Chat()
-
-
-def clean_input(prompt: str='', style=None):
+def clean_input(console, prompt='', style=None):
     """
     Request input and handle interrupts
     """
@@ -31,7 +26,7 @@ def clean_input(prompt: str='', style=None):
         print("Quitting...")
         exit(0)
 
-def print_response(response) -> None:
+def print_response(console, response) -> None:
     """
     Format response from LLM
     """
@@ -57,7 +52,7 @@ def handle_user_commands(chat, user_prompt) -> bool:
             print_response(resp)
             return True
 
-def load_system_prompt() -> str:
+def load_system_prompt(console) -> str:
     """
     Load the stored prompt from the database
     """
@@ -71,7 +66,7 @@ def load_system_prompt() -> str:
                 for prompt in Prompt.select(role="system"):
                     print(f" {prompt.id}. {prompt.name}")
 
-                prompt_selection = clean_input("Select: ")
+                prompt_selection = clean_input(console, "Select: ")
 
                 if prompt_selection.isnumeric():
                     selected_prompt = Prompt[prompt_selection]
@@ -84,12 +79,12 @@ def load_system_prompt() -> str:
                     break
     
     print("Please, enter your own system prompt.")
-    sys_prompt = clean_input("System Prompt: ")
+    sys_prompt = clean_input(console, "System Prompt: ")
 
-    to_save = clean_input("Would you like to save this prompt? [y/N]: ")
+    to_save = clean_input(console, "Would you like to save this prompt? [y/N]: ")
 
     if to_save == "y":
-        new_prompt_name = clean_input("What would you like to name this prompt?: ")
+        new_prompt_name = clean_input(console, "What would you like to name this prompt?: ")
 
         with session:
             Prompt(name=new_prompt_name, text=sys_prompt, role="system")
@@ -128,6 +123,10 @@ def run(conversation_id=None, load_prompt=False) -> None:
     """
     Main function for CLI execution
     """
+    cfg = Config()
+    console = Console()
+    chat = Chat()
+
     end = False
     try_again = False
     skip_user_input = False
@@ -149,7 +148,7 @@ def run(conversation_id=None, load_prompt=False) -> None:
         print(f"Conversation created: {chat.conversation_name} ({chat.conversation_id})")
 
         if load_prompt:
-            sys_prompt, skip_user_input = load_system_prompt()
+            sys_prompt, skip_user_input = load_system_prompt(console)
             chat.add_message("system", sys_prompt)
         else:
             print("Loading default system prompt...")
@@ -160,7 +159,7 @@ def run(conversation_id=None, load_prompt=False) -> None:
 
     while end == False:
         if try_again == False and skip_user_input == False:
-            user_prompt = clean_input("Prompt: ", style="green3")
+            user_prompt = clean_input(console, "Prompt: ", style="green3")
 
             if handle_user_commands(chat, user_prompt):
                 continue
@@ -171,16 +170,16 @@ def run(conversation_id=None, load_prompt=False) -> None:
 
         try:
             with console.status("Thinking... "):
-                resp = chat.complete(model=cfg.smart_cli_model)
+                resp = chat.complete()
 
                 if resp:
                     chat.add_message("assistant", resp)
-                    print_response(resp)
+                    print_response(console, resp)
                     try_again = False
 
         except Exception as e:
             print("The following error occured: ", e)
-            desc = clean_input("Whould you like to try again? [Y/n]: ")
+            desc = clean_input(console, "Whould you like to try again? [Y/n]: ")
 
             if desc == "n":
                 quit()
