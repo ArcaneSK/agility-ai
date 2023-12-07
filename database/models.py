@@ -12,10 +12,10 @@ class Prompt(db.Entity):
 class Conversation(db.Entity):
     name = Required(str)
     messages = Set('Message')
-    created = Required(datetime, default=datetime.now())
+    created = Required(datetime)
 
 class Message(db.Entity):
     conversation = Required(Conversation)
     role = Required(str)
     text = Required(str)
-    created = Required(datetime, default=datetime.now())
+    created = Required(datetime)

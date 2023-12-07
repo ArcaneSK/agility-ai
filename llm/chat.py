@@ -30,14 +30,13 @@ class Chat():
         else:
             self.module = OpenAIModule(self.cfg)
 
-        print("Loading Model")
         self.module.load_model()
 
     def create(self) -> None:
         self.conversation_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
 
         with session:
-            c = Conversation(name=self.conversation_name)
+            c = Conversation(name=self.conversation_name, created=datetime.now())
 
         if c:
             self.conversation_id = c.id
@@ -74,7 +73,7 @@ class Chat():
         if self.conversation_id:
             with session:
                 c = Conversation[self.conversation_id]
-                Message(role=role, text=content, conversation=c)
+                Message(role=role, text=content, conversation=c, created=datetime.now())
 
     def add_shadow_message(self, role: str, content: str) -> None:
         """
