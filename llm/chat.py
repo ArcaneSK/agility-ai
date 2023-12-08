@@ -2,15 +2,16 @@ import string
 import random
 from pony.orm import select
 
-from .memory import format_memory, MemoryScheme
-
 from config import Config
 
 from database import session
 from database.models import *
 
+from .memory import format_memory, MemoryScheme
+
 from llm.modules.openai_module import OpenAIModule
 from llm.modules.huggingface_module import HuggingFaceModule
+
 
 class Chat():
 
@@ -33,6 +34,9 @@ class Chat():
         self.module.load_model()
 
     def create(self) -> None:
+        """ 
+        Create a new conversation
+        """
         self.conversation_name = ''.join(random.choices(string.ascii_lowercase + string.digits, k=12))
 
         with session:
@@ -42,6 +46,9 @@ class Chat():
             self.conversation_id = c.id
 
     def load(self, conversation_id) -> bool:
+        """ 
+        Load a past conversation from the database
+        """
         with session:
             c = Conversation[conversation_id]
 
@@ -57,6 +64,9 @@ class Chat():
         return False
     
     def clear(self):
+        """ 
+        Clear the current conversation
+        """
         self.conversation_id = None
         self.messages = []
         self.shadow_messages = []

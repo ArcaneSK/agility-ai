@@ -19,6 +19,9 @@ pyaudio = "^0.2.13"
 soundfile = "^0.12.1"
 rich = "^13.4.1"
 pocketsphinx = "^5.0.1"
+ffmpeg = "^1.4"
+openai-whisper = {git = "https://github.com/oobabooga/whisper.git"}
+torch = "^2.1.1"
 
 [build-system]
 requires = ["poetry-core"]

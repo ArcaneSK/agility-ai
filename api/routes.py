@@ -1,10 +1,11 @@
-import json
+import io
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, File, UploadFile
 
 from database import session
 from database.models import *
 from config import Config
+from utils.stt import do_stt
 
 from .schemas import *
 
@@ -12,6 +13,12 @@ cfg = Config()
 router = APIRouter()
     
 @router.get('/prompt', response_model=list[PromptSchema])
+async def get_all_system_prompts():
+    with session:
+        prompts = Prompt.select(role="system") 
+        return [PromptSchema.from_orm(pmpt) for pmpt in prompts]
+    
+@router.post('/prompt', response_model=list[PromptSchema])
 async def get_all_system_prompts():
     with session:
         prompts = Prompt.select(role="system") 
@@ -38,7 +45,7 @@ async def complete(request: Request, completion: Completion):
         chat.load(completion.cid)
     else:
         chat.create()
-        chat.add_message("system", "You are a helpfule AI chat bot, named Carl.")
+        chat.add_message("system", "You are a helpful AI chat bot.")
 
     chat.add_message("user", completion.message.text)
     resp = chat.complete()
@@ -57,3 +64,15 @@ async def complete(request: Request, completion: Completion):
     chat.clear()
 
     return Completion(**resp_completion)
+
+@router.post('/complete-audio')
+async def complete_audio(file: UploadFile = File(...)):
+    text = ''
+    
+    audio_stream = io.BytesIO(await file.read())
+
+    text = do_stt(audio_stream)
+
+    print(f'Audio file processed -- Result: {text}')
+
+    return { 'text': text }
