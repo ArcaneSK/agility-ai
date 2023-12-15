@@ -6,6 +6,7 @@ from database import session
 from database.models import *
 from config import Config
 from utils.stt import do_stt
+from utils.tts import do_tts
 
 from .schemas import *
 
@@ -65,8 +66,8 @@ async def complete(request: Request, completion: Completion):
 
     return Completion(**resp_completion)
 
-@router.post('/complete-audio')
-async def complete_audio(file: UploadFile = File(...)):
+@router.post('/speech-to-text')
+async def speach_to_text(file: UploadFile = File(...)):
     text = ''
     
     audio_stream = io.BytesIO(await file.read())
@@ -74,5 +75,12 @@ async def complete_audio(file: UploadFile = File(...)):
     text = do_stt(audio_stream)
 
     print(f'Audio file processed -- Result: {text}')
+
+    return { 'text': text }
+
+@router.post('/text-to-speech')
+async def text_to_speech(text: str):
+
+    audio_data = do_tts(text)
 
     return { 'text': text }
