@@ -5,20 +5,14 @@ except ModuleNotFoundError:
     print("Could not find the TTS module.")
     raise
 
-def do_tts(text):
-    model = TTS('tts_models/multilingual/multi-dataset/xtts_v2').to('cuda')
+class TextToSpeech:
 
-    #model.tts_to_file(
-    #    text=text,
-    #    file_path=output_file,
-    #    speaker_wav=['path/to/wave/file'],
-    #    language='English'
-    #    )
+    def __init__(self):
+        self.model = TTS('tts_models/multilingual/multi-dataset/xtts_v2').to('cuda')
 
-    #audio_data = model.tts(
-    #    text=text,
-    #    speaker_wav=['path/to/wave/file'],
-    #    language='English'
-    #    )
-
-    pass
+    def do_tts(self, text, speaker):
+        return self.model.tts(
+        text=text,
+        speaker_wav=[f'voices\{speaker}.wav'],
+        language='en'
+        )

@@ -1,12 +1,14 @@
 import io
+import tempfile
+import soundfile as sf
 
-from fastapi import APIRouter, Request, File, UploadFile
+from fastapi import APIRouter, Request, File, UploadFile, Body
+from fastapi.responses import FileResponse
 
 from database import session
 from database.models import *
 from config import Config
 from utils.stt import do_stt
-from utils.tts import do_tts
 
 from .schemas import *
 
@@ -46,7 +48,7 @@ async def complete(request: Request, completion: Completion):
         chat.load(completion.cid)
     else:
         chat.create()
-        chat.add_message("system", "You are a helpful AI chat bot.")
+        chat.add_message("system", "You are a helpful AI chat bot. Always keep your resonses short, maximum of 4 sentences. Always respond lovingly.")
 
     chat.add_message("user", completion.message.text)
     resp = chat.complete()
@@ -67,20 +69,20 @@ async def complete(request: Request, completion: Completion):
     return Completion(**resp_completion)
 
 @router.post('/speech-to-text')
-async def speach_to_text(file: UploadFile = File(...)):
+async def speech_to_text(file: UploadFile = File(...)):
     text = ''
-    
     audio_stream = io.BytesIO(await file.read())
-
     text = do_stt(audio_stream)
-
-    print(f'Audio file processed -- Result: {text}')
 
     return { 'text': text }
 
 @router.post('/text-to-speech')
-async def text_to_speech(text: str):
+async def text_to_speech(request: Request, text: str = Body(..., embed=True), voice_name: str = Body(..., embed=True)):
+    tts = request.app.tts
 
-    audio_data = do_tts(text)
+    audio_data = tts.do_tts(text, voice_name)
 
-    return { 'text': text }
+    wavefile_path = tempfile.NamedTemporaryFile(suffix='.wav', delete=False).name
+    sf.write(wavefile_path, audio_data, 22050, format='WAV')
+
+    return FileResponse(wavefile_path, media_type="audio/wav")
